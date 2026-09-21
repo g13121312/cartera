@@ -7,7 +7,7 @@
     { "name": "Cobas Selección", "isin": "LU1372006947", "ticker": "0P0001C4XQ.F", "weight": 10.88 },
     { "name": "Azvalor Internacional", "isin": "ES0112611001", "ticker": "0P00016YQ5.F", "weight": 11.74 },
     { "name": "Vanguard Global Small-Cap Index", "isin": "IE00B42W4L06", "ticker": "0P0001I4Z4.F", "weight": 6.76 },
-    { "name": "Robeco Smart Energy", "isin": "LU2145461757", "ticker": "0P0001JX9E.F", "weight": 4.47 },
+    { "name": "Robeco Smart Energy", "isin": "LU2145461757", "ticker": "0P0001KWJG", "weight": 4.47 },
     { "name": "Fidelity Global Industrials", "isin": "LU2504555777", "ticker": "0P0001PGJS.F", "weight": 4.93 },
     { "name": "Storm Bond Fund", "isin": "LU0840158819", "ticker": "0P0000X0A1.F", "weight": 8.92 },
     { "name": "Gamma Global", "isin": "ES0140794019", "ticker": "0P0001K3QO.F", "weight": 7.95 }
