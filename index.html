@@ -68,7 +68,7 @@ th{font-weight:500;color:var(--muted);font-size:12px}
 
 <script>
 // <core>
-const TFS = [["1S",7],["1M",30],["3M",91],["6M",182],["YTD","ytd"],["1A",365],["3A",1095],["Máx",null]];
+const TFS = [["1S",7],["1M",30],["3M",91],["6M",182],["YTD","ytd"],["1A",365],["3A",1095],["5A",1826],["Máx",null]];
 
 function prepare(funds, seriesByIsin){
   const active = [], missing = [];
@@ -104,6 +104,17 @@ function computeWindow(prep, tf){
   if (i0 < 0) { for (let j = 0; j < dates.length; j++) if (allOk(j)) { i0 = j; break; } }
   if (i0 < 0 || i0 >= dates.length - 1) return null;
 
+  // Si la ventana empieza más tarde de lo pedido, señala qué fondo tiene la historia más corta.
+  let limitedBy = null;
+  if (tf !== null && dates[i0] > cut || (tf === null && active.length > 1)) {
+    let worst = null;
+    for (const f of active){
+      const first = f.v.findIndex(x => x != null);
+      if (!worst || first > worst.first) worst = { first, name: f.name };
+    }
+    if (worst && worst.first > 0) limitedBy = { name: worst.name, since: dates[worst.first] };
+  }
+
   const labels = dates.slice(i0);
   const perFund = active.map(f => labels.map((_, k) => 100 * f.v[i0+k] / f.v[i0]));
   const port = labels.map((_, k) => active.reduce((a,f,i) => a + f.w * perFund[i][k], 0));
@@ -116,10 +127,13 @@ function computeWindow(prep, tf){
   for (const x of port){ peak = Math.max(peak, x); mdd = Math.min(mdd, x/peak - 1); }
   const days = (new Date(labels[labels.length-1]) - new Date(labels[0])) / 864e5;
   const ret = port[port.length-1]/100 - 1;
+  // Anualiza con la frecuencia real de los datos (diarios, semanales...), no con 252 fijo.
+  const perYear = rets.length / (days / 365.25);
 
   return {
     labels, port, perFund, ret, mdd,
-    vol: sd * Math.sqrt(252),
+    vol: sd * Math.sqrt(perYear),
+    n: labels.length, gapDays: days / (labels.length - 1), limitedBy,
     annual: days >= 365 ? Math.pow(1+ret, 365/days) - 1 : null,
     start: labels[0], end: labels[labels.length-1],
     rows: active.map((f,i) => ({
@@ -178,6 +192,7 @@ function render(){
       ${w.annual!==null?`<div><span>Rentabilidad anualizada</span><b class="${cls(w.annual)}">${pct(w.annual,1)}</b></div>`:""}
       <div><span>Valor base 100 hoy</span><b>${nf(w.port[w.port.length-1],1)}</b></div>
     </div>
+    <p class="note">${w.n} datos, uno cada ${nf(w.gapDays,1)} días de media.${w.limitedBy ? ` Este periodo empieza el ${dfmt(w.start)} porque ${w.limitedBy.name} solo tiene datos desde el ${dfmt(w.limitedBy.since)}.` : ""}</p>
     <div class="tablewrap"><table>
       <thead><tr><th>Fondo</th><th>Peso</th><th>Rentab.</th><th>Aportación</th><th>Último NAV</th><th>Fecha NAV</th></tr></thead>
       <tbody>${rowsHtml}</tbody></table></div>`;
