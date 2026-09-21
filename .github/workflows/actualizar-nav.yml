@@ -1,0 +1,67 @@
+name: Actualizar NAV
+
+on:
+  schedule:
+    # Todos los días (fines de semana incluidos), dos veces: los fondos publican el
+    # valor liquidativo con 1-2 días de retraso y a horas distintas.
+    # GitHub usa UTC: 06:17 UTC = 08:17 en España (verano) y 17:43 UTC = 19:43.
+    - cron: "17 6 * * *"
+    - cron: "43 17 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: actualizar-nav
+  cancel-in-progress: false
+
+jobs:
+  nav:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "mstarpy>=11,<12"
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb
+
+      # mstarpy abre un Chrome real (Selenium) para pasar el filtro anti-bots de
+      # Morningstar. En el runner no hay pantalla: xvfb-run le da una virtual.
+      - name: Descargar NAV
+        id: nav
+        continue-on-error: true
+        env:
+          SELENIUM_CHROME_FLAGS: "--no-sandbox --disable-dev-shm-usage --disable-gpu"
+          SELENIUM_DRIVER_WAIT_TIME: "10"
+        run: xvfb-run -a python update_navs.py
+
+      # Se guarda aunque el paso anterior haya salido en rojo (datos parciales o viejos).
+      - name: Guardar cambios
+        run: |
+          git config user.name "nav-bot"
+          git config user.email "nav-bot@users.noreply.github.com"
+          git add data
+          if git diff --cached --quiet; then
+            echo "Sin datos nuevos: no hay commit."
+          else
+            git commit -m "NAV $(date -u +%F)"
+            git pull --rebase --autostash
+            git push
+          fi
+
+      # Si algún fondo lleva demasiados días sin dato (o todo falló), el run queda
+      # en rojo y GitHub te avisa por email. Antes salía siempre en verde.
+      - name: Avisar si los datos están desactualizados
+        if: steps.nav.outcome == 'failure'
+        run: |
+          echo "::error::Hay fondos sin datos recientes o la descarga falló. Mira el resumen del paso 'Descargar NAV'."
+          exit 1
