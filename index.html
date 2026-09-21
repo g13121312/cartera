@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cartera · seguimiento de NAV</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#EDF0F2; --panel:#FFFFFF; --ink:#12222E; --muted:#5B6B78; --line:#D5DBE0;
+  --accent:#0E6B68; --neg:#B0343F; --chip:#E3E8EC;
+  --sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --serif:"Newsreader",Georgia,"Times New Roman",serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#0F1A22; --panel:#16232D; --ink:#E6EDF2; --muted:#93A4B1; --line:#27384433; --accent:#4FC3BC; --neg:#F08A93; --chip:#1E2F3B; }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--sans);padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+main{max-width:1040px;margin:0 auto;padding:20px 16px 48px}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 16px;align-items:baseline;margin-bottom:14px}
+h1{font:500 22px/1.2 var(--serif);margin:0}
+.upd{color:var(--muted);font-size:13px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
+.top{display:flex;flex-wrap:wrap;gap:12px 32px;align-items:flex-end;justify-content:space-between;margin-bottom:12px}
+.big{font:500 44px/1 var(--serif);letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.big small{display:block;font:400 13px/1.4 var(--sans);color:var(--muted);margin-top:6px;letter-spacing:0}
+.pos{color:var(--accent)} .neg{color:var(--neg)}
+.tfs{display:flex;flex-wrap:wrap;gap:6px}
+button{font:500 13px var(--sans);color:var(--ink);background:var(--chip);border:0;border-radius:6px;padding:7px 11px;cursor:pointer;min-height:34px}
+button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chartbox{position:relative;height:340px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-top:14px}
+.stats div{background:var(--panel);padding:10px 12px;font-variant-numeric:tabular-nums}
+.stats span{display:block;color:var(--muted);font-size:12px}
+.stats b{font-weight:600;font-size:16px}
+.view{display:flex;gap:6px;margin-top:14px}
+.tablewrap{overflow-x:auto;margin-top:16px}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;min-width:560px}
+th,td{text-align:right;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left;white-space:normal}
+th{font-weight:500;color:var(--muted);font-size:12px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px}
+.note{color:var(--muted);font-size:13px;margin:14px 2px 0}
+.empty{padding:28px 8px;text-align:center;color:var(--muted)}
+.empty b{color:var(--ink)}
+@media (max-width:520px){ .big{font-size:36px} .chartbox{height:280px} }
+@media (prefers-reduced-motion:reduce){ *{transition:none!important} }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1 id="title">Cartera</h1>
+    <span class="upd" id="upd"></span>
+  </header>
+
+  <section class="panel" id="panel">
+    <div class="empty">Cargando datos…</div>
+  </section>
+  <p class="note" id="missing"></p>
+</main>
+
+<script>
+// <core>
+const TFS = [["1S",7],["1M",30],["3M",91],["6M",182],["YTD","ytd"],["1A",365],["3A",1095],["Máx",null]];
+
+function prepare(funds, seriesByIsin){
+  const active = [], missing = [];
+  for (const f of funds){
+    const s = f.isin && seriesByIsin[f.isin];
+    if (s && s.length > 1) active.push({...f, s}); else missing.push(f);
+  }
+  const wsum = active.reduce((a,f)=>a+(+f.weight||0),0) || 1;
+  active.forEach(f => f.w = (+f.weight||0)/wsum);
+  const dates = [...new Set(active.flatMap(f => f.s.map(p => p[0])))].sort();
+  active.forEach(f => {
+    const m = new Map(f.s); let last = null;
+    f.v = dates.map(d => { if (m.has(d)) last = m.get(d); return last; });
+  });
+  return { active, missing, dates };
+}
+
+function cutoffDate(tf, endStr){
+  if (tf === null) return "0000-01-01";
+  const end = new Date(endStr + "T00:00:00Z");
+  if (tf === "ytd") return (end.getUTCFullYear() - 1) + "-12-31";
+  return new Date(end.getTime() - tf * 864e5).toISOString().slice(0,10);
+}
+
+// Ventana: la cartera se "rebasa" a 100 en el inicio, con los pesos objetivo.
+function computeWindow(prep, tf){
+  const { active, dates } = prep;
+  if (!active.length) return null;
+  const allOk = j => active.every(f => f.v[j] != null);
+  const cut = cutoffDate(tf, dates[dates.length-1]);
+  let i0 = -1;
+  for (let j = 0; j < dates.length; j++) if (dates[j] <= cut && allOk(j)) i0 = j;
+  if (i0 < 0) { for (let j = 0; j < dates.length; j++) if (allOk(j)) { i0 = j; break; } }
+  if (i0 < 0 || i0 >= dates.length - 1) return null;
+
+  const labels = dates.slice(i0);
+  const perFund = active.map(f => labels.map((_, k) => 100 * f.v[i0+k] / f.v[i0]));
+  const port = labels.map((_, k) => active.reduce((a,f,i) => a + f.w * perFund[i][k], 0));
+
+  const rets = [];
+  for (let k = 1; k < port.length; k++) rets.push(Math.log(port[k]/port[k-1]));
+  const mean = rets.reduce((a,b)=>a+b,0)/rets.length;
+  const sd = Math.sqrt(rets.reduce((a,b)=>a+(b-mean)**2,0)/Math.max(rets.length-1,1));
+  let peak = -Infinity, mdd = 0;
+  for (const x of port){ peak = Math.max(peak, x); mdd = Math.min(mdd, x/peak - 1); }
+  const days = (new Date(labels[labels.length-1]) - new Date(labels[0])) / 864e5;
+  const ret = port[port.length-1]/100 - 1;
+
+  return {
+    labels, port, perFund, ret, mdd,
+    vol: sd * Math.sqrt(252),
+    annual: days >= 365 ? Math.pow(1+ret, 365/days) - 1 : null,
+    start: labels[0], end: labels[labels.length-1],
+    rows: active.map((f,i) => ({
+      name: f.name, isin: f.isin, w: f.w,
+      ret: perFund[i][perFund[i].length-1]/100 - 1,
+      contrib: f.w * (perFund[i][perFund[i].length-1]/100 - 1),
+      nav: f.s[f.s.length-1][1], navDate: f.s[f.s.length-1][0]
+    }))
+  };
+}
+// </core>
+
+// ---------- Interfaz ----------
+const $ = s => document.querySelector(s);
+const nf = (x,d=2) => x.toLocaleString("es-ES",{minimumFractionDigits:d,maximumFractionDigits:d});
+const pct = (x,d=2) => (x>=0?"+":"−") + nf(Math.abs(x*100),d) + " %";
+const dfmt = s => new Date(s+"T00:00:00").toLocaleDateString("es-ES",{day:"numeric",month:"short",year:"numeric"});
+const cls = x => x >= 0 ? "pos" : "neg";
+const PALETTE = ["#0E6B68","#C2703D","#4A6FA5","#8C5E9E","#B0343F","#6E8B3D","#B8912F","#2F8FA3","#7A6A5D","#D08A9B"];
+
+const state = { tf:"1A", view:"cartera", prep:null, chart:null, meta:null };
+
+function css(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+function render(){
+  const tfObj = TFS.find(t => t[0] === state.tf);
+  const w = computeWindow(state.prep, tfObj[1]);
+  const panel = $("#panel");
+  if (!w){
+    panel.innerHTML = '<div class="empty"><b>Todavía no hay datos suficientes.</b><br>Añade los ISIN en <code>funds.json</code> y lanza el workflow «Actualizar NAV» (o ejecuta <code>python update_navs.py</code>).</div>';
+    return;
+  }
+  const rowsHtml = w.rows.slice().sort((a,b)=>b.w-a.w).map((r,i) =>
+    `<tr><td><span class="dot" style="background:${PALETTE[state.prep.active.findIndex(f=>f.isin===r.isin)%PALETTE.length]}"></span>${r.name}</td>
+     <td>${nf(r.w*100,1)} %</td>
+     <td class="${cls(r.ret)}">${pct(r.ret)}</td>
+     <td class="${cls(r.contrib)}">${pct(r.contrib)}</td>
+     <td>${nf(r.nav,3)}</td>
+     <td>${dfmt(r.navDate)}</td></tr>`).join("");
+
+  panel.innerHTML = `
+    <div class="top">
+      <div class="big ${cls(w.ret)}">${pct(w.ret)}<small>Desde ${dfmt(w.start)} hasta ${dfmt(w.end)}</small></div>
+      <div class="tfs" role="group" aria-label="Periodo">
+        ${TFS.map(t=>`<button data-tf="${t[0]}" aria-pressed="${t[0]===state.tf}">${t[0]}</button>`).join("")}
+      </div>
+    </div>
+    <div class="chartbox"><canvas id="c" role="img" aria-label="Evolución de la cartera base 100"></canvas></div>
+    <div class="view" role="group" aria-label="Vista">
+      <button data-view="cartera" aria-pressed="${state.view==='cartera'}">Solo cartera</button>
+      <button data-view="fondos" aria-pressed="${state.view==='fondos'}">Cartera y fondos</button>
+    </div>
+    <div class="stats">
+      <div><span>Volatilidad anualizada</span><b>${nf(w.vol*100,1)} %</b></div>
+      <div><span>Caída máxima</span><b class="neg">${pct(w.mdd,1)}</b></div>
+      ${w.annual!==null?`<div><span>Rentabilidad anualizada</span><b class="${cls(w.annual)}">${pct(w.annual,1)}</b></div>`:""}
+      <div><span>Valor base 100 hoy</span><b>${nf(w.port[w.port.length-1],1)}</b></div>
+    </div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Fondo</th><th>Peso</th><th>Rentab.</th><th>Aportación</th><th>Último NAV</th><th>Fecha NAV</th></tr></thead>
+      <tbody>${rowsHtml}</tbody></table></div>`;
+
+  panel.querySelectorAll("[data-tf]").forEach(b => b.onclick = () => { state.tf = b.dataset.tf; render(); });
+  panel.querySelectorAll("[data-view]").forEach(b => b.onclick = () => { state.view = b.dataset.view; render(); });
+  drawChart(w);
+}
+
+function drawChart(w){
+  if (state.chart) state.chart.destroy();
+  const ink = css("--ink"), muted = css("--muted"), grid = css("--line"), accent = css("--accent");
+  const datasets = [];
+  if (state.view === "fondos"){
+    state.prep.active.forEach((f,i) => datasets.push({
+      label: f.name, data: w.perFund[i], borderColor: PALETTE[i%PALETTE.length],
+      borderWidth: 1.2, pointRadius: 0, tension: 0, order: 2
+    }));
+  }
+  datasets.push({
+    label: "Cartera", data: w.port, borderColor: accent, borderWidth: 2.6, pointRadius: 0,
+    tension: 0, order: 1, fill: state.view === "cartera" ? { target: {value: 100}, above: accent + "22", below: css("--neg") + "22" } : false
+  });
+  state.chart = new Chart($("#c"), {
+    type: "line",
+    data: { labels: w.labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      interaction: { mode: "index", intersect: false },
+      plugins: {
+        legend: { display: state.view === "fondos", labels: { color: muted, boxWidth: 10, font: { size: 11 } } },
+        tooltip: { callbacks: {
+          title: items => dfmt(items[0].label),
+          label: c => `${c.dataset.label}: ${nf(c.parsed.y,1)} (${pct(c.parsed.y/100-1,1)})`
+        } }
+      },
+      scales: {
+        x: { ticks: { color: muted, maxTicksLimit: 6, maxRotation: 0,
+              callback(v){ const d = new Date(this.getLabelForValue(v)+"T00:00:00");
+                return d.toLocaleDateString("es-ES", w.labels.length > 400 ? {month:"short",year:"2-digit"} : {day:"numeric",month:"short"}); } },
+             grid: { display: false } },
+        y: { ticks: { color: muted }, grid: { color: grid } }
+      }
+    }
+  });
+}
+
+async function boot(){
+  try {
+    const [f, n] = await Promise.all([
+      fetch("funds.json", {cache:"no-store"}).then(r => r.json()),
+      fetch("data/navs.json", {cache:"no-store"}).then(r => r.ok ? r.json() : {series:{}}).catch(() => ({series:{}}))
+    ]);
+    $("#title").textContent = f.nombre || "Cartera";
+    if (n.updated) $("#upd").textContent = "Datos actualizados " + new Date(n.updated).toLocaleString("es-ES",{dateStyle:"medium",timeStyle:"short"});
+    state.prep = prepare(f.funds, n.series || {});
+    if (state.prep.missing.length)
+      $("#missing").textContent = "Sin datos todavía: " + state.prep.missing.map(m => m.name).join(", ") + ". Los pesos de los demás se reajustan a 100 %.";
+    render();
+  } catch (e) {
+    $("#panel").innerHTML = '<div class="empty"><b>No se pudieron cargar los datos.</b><br>Si abres el archivo directamente desde el disco, el navegador bloquea la carga. Usa GitHub Pages o ejecuta <code>python -m http.server</code> en esta carpeta.</div>';
+  }
+}
+boot();
+</script>
+</body>
+</html>
