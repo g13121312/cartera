@@ -1,3 +1,224 @@
 {
-  "operaciones": []
+  "operaciones": [
+    {
+      "fecha": "2026-01-11",
+      "isin": "IE00BYX5NX33",
+      "importe": 900
+    },
+    {
+      "fecha": "2026-01-11",
+      "isin": "IE00BYX5M476",
+      "importe": 100
+    },
+    {
+      "fecha": "2026-01-18",
+      "isin": "IE00BYX5NX33",
+      "importe": 1975
+    },
+    {
+      "fecha": "2026-01-18",
+      "isin": "IE00BYX5M476",
+      "importe": 525
+    },
+    {
+      "fecha": "2026-01-18",
+      "isin": "IE00B42W4L06",
+      "importe": 625
+    },
+    {
+      "fecha": "2026-01-25",
+      "isin": "LU1372006947",
+      "importe": 500
+    },
+    {
+      "fecha": "2026-01-26",
+      "isin": "IE00BYX5NX33",
+      "importe": 124.88
+    },
+    {
+      "fecha": "2026-01-28",
+      "isin": "IE00BYX5NX33",
+      "importe": 420
+    },
+    {
+      "fecha": "2026-01-28",
+      "isin": "IE00BYX5M476",
+      "importe": 87.5
+    },
+    {
+      "fecha": "2026-01-28",
+      "isin": "IE00B42W4L06",
+      "importe": 87.5
+    },
+    {
+      "fecha": "2026-03-05",
+      "isin": "LU1372006947",
+      "importe": 209.8
+    },
+    {
+      "fecha": "2026-03-25",
+      "isin": "IE00BYX5NX33",
+      "importe": 250
+    },
+    {
+      "fecha": "2026-03-25",
+      "isin": "IE00BYX5M476",
+      "importe": 100
+    },
+    {
+      "fecha": "2026-03-25",
+      "isin": "LU1372006947",
+      "importe": 125
+    },
+    {
+      "fecha": "2026-04-01",
+      "isin": "IE00BYX5M476",
+      "importe": 100
+    },
+    {
+      "fecha": "2026-04-01",
+      "isin": "IE00BYX5NX33",
+      "importe": 400
+    },
+    {
+      "fecha": "2026-04-15",
+      "isin": "LU1372006947",
+      "importe": 100
+    },
+    {
+      "fecha": "2026-04-27",
+      "isin": "LU2145461757",
+      "importe": 500
+    },
+    {
+      "fecha": "2026-04-28",
+      "isin": "ES0112611001",
+      "importe": 500
+    },
+    {
+      "fecha": "2026-04-28",
+      "isin": "LU2145461757",
+      "importe": 500
+    },
+    {
+      "fecha": "2026-04-28",
+      "isin": "LU2504555777",
+      "importe": 500
+    },
+    {
+      "fecha": "2026-05-06",
+      "isin": "LU1372006947",
+      "importe": 300
+    },
+    {
+      "fecha": "2026-05-06",
+      "isin": "IE00BYX5NX33",
+      "importe": 185
+    },
+    {
+      "fecha": "2026-05-06",
+      "isin": "IE00B42W4L06",
+      "importe": 85
+    },
+    {
+      "fecha": "2026-05-06",
+      "isin": "IE00BYX5M476",
+      "importe": 75
+    },
+    {
+      "fecha": "2026-05-06",
+      "isin": "LU2504555777",
+      "importe": 100
+    },
+    {
+      "fecha": "2026-05-06",
+      "isin": "LU2145461757",
+      "importe": 55
+    },
+    {
+      "fecha": "2026-05-07",
+      "isin": "ES0112611001",
+      "importe": 200
+    },
+    {
+      "fecha": "2026-05-26",
+      "isin": "ES0140794019",
+      "importe": 1167
+    },
+    {
+      "fecha": "2026-05-26",
+      "isin": "LU0840158819",
+      "importe": 1333
+    },
+    {
+      "fecha": "2026-06-22",
+      "isin": "ES0112611001",
+      "importe": 200
+    },
+    {
+      "fecha": "2026-08-02",
+      "isin": "IE00BYX5NX33",
+      "importe": 150
+    },
+    {
+      "fecha": "2026-08-02",
+      "isin": "IE00B42W4L06",
+      "importe": 100
+    },
+    {
+      "fecha": "2026-08-02",
+      "isin": "LU2504555777",
+      "importe": 50
+    },
+    {
+      "fecha": "2026-08-02",
+      "isin": "LU2145461757",
+      "importe": 150
+    },
+    {
+      "fecha": "2026-08-02",
+      "isin": "IE00BYX5M476",
+      "importe": 150
+    },
+    {
+      "fecha": "2026-08-03",
+      "isin": "LU1372006947",
+      "importe": 200
+    },
+    {
+      "fecha": "2026-08-04",
+      "isin": "ES0112611001",
+      "importe": 200
+    },
+    {
+      "fecha": "2026-09-16",
+      "isin": "IE00BYX5NX33",
+      "importe": 300
+    },
+    {
+      "fecha": "2026-09-16",
+      "isin": "IE00BYX5M476",
+      "importe": 100
+    },
+    {
+      "fecha": "2026-09-16",
+      "isin": "LU2504555777",
+      "importe": 60
+    },
+    {
+      "fecha": "2026-09-16",
+      "isin": "IE00B42W4L06",
+      "importe": 60
+    },
+    {
+      "fecha": "2026-09-17",
+      "isin": "ES0112611001",
+      "importe": 100
+    },
+    {
+      "fecha": "2026-09-17",
+      "isin": "LU1372006947",
+      "importe": 120
+    }
+  ]
 }
