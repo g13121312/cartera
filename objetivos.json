@@ -1,10 +1,3 @@
 {
-  "objetivos": [
-    {
-      "nombre": "Casa",
-      "objetivo": 60000,
-      "actual": 23.028,
-      "fecha": "2029-09-23"
-    }
-  ]
+  "objetivos": []
 }
