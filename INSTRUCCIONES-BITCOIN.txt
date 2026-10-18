@@ -1,0 +1,12 @@
+CARTERA + BITCOIN (RAMA DE PRUEBAS)
+
+Contenido:
+- index.html: cartera original con un acceso a Bitcoin.
+- bitcoin.html: módulo Bitcoin con gráficos, registro manual y panel de sincronización.
+- El resto de archivos de la cartera original se conservan.
+
+IMPORTANTE SOBRE LA SINCRONIZACIÓN:
+bitcoin.html usa el servidor https://cartera-bitcoin-api.g13121312.workers.dev.
+Antes de probar guardados, hay que confirmar que ese Worker sigue existiendo y que apunta al repositorio g13121312/cartera, rama cartera-bitcoin, archivo bitcoin-operaciones.json, con el secreto GITHUB_TOKEN configurado.
+Si el Worker/API se eliminó, la página Bitcoin se abrirá, pero la sincronización entre dispositivos no funcionará hasta recrear y probar la API.
+No desplegar en main. Subir estos archivos únicamente a la rama cartera-bitcoin y probar primero.
