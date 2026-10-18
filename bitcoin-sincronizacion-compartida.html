@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark"><meta name="theme-color" content="#0b1118">
+<title>Bitcoin · Trading y estrategias</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lightweight-charts@4.2.2/dist/lightweight-charts.standalone.production.js"></script>
+<style>
+:root{color-scheme:dark;--bg:#0b1118;--panel:#121d27;--panel2:#172531;--ink:#eef4f7;--muted:#8da0ae;--line:rgba(255,255,255,.09);--orange:#f7931a;--green:#32c48d;--red:#ff647c;--blue:#64a7ff;--radius:20px;--shadow:0 20px 50px rgba(0,0,0,.22);font-family:"Instrument Sans",system-ui,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 10% 0%,rgba(247,147,26,.12),transparent 35%),radial-gradient(ellipse at 90% 10%,rgba(57,120,190,.1),transparent 30%),var(--bg);color:var(--ink);min-height:100vh}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;background:linear-gradient(110deg,transparent,rgba(255,255,255,.012),transparent);animation:shine 14s ease-in-out infinite alternate}
+@keyframes shine{from{transform:translateX(-8%)}to{transform:translateX(8%)}}
+main{max-width:1400px;margin:auto;padding:24px clamp(14px,3vw,38px) 50px;position:relative}.top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:26px;flex-wrap:wrap}.brand{display:flex;align-items:center;gap:13px}.coin{width:46px;height:46px;border-radius:50%;background:linear-gradient(145deg,#ffb342,#e98206);display:grid;place-items:center;color:white;font-size:30px;font-weight:800;box-shadow:0 8px 26px #f7931a33}.eyebrow{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--orange);font-weight:700}.title{font-family:Newsreader,Georgia,serif;font-size:clamp(26px,4vw,38px);margin:0;letter-spacing:-.03em}.subtitle{color:var(--muted);font-size:13px;margin-top:3px}.top-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap}a.btn,button,.select{font:inherit}.btn,button{border:1px solid var(--line);background:var(--panel2);color:var(--ink);padding:10px 13px;border-radius:11px;cursor:pointer;text-decoration:none;transition:transform .18s ease,border-color .18s ease,background .18s ease}.btn:hover,button:hover{transform:translateY(-1px);border-color:#f7931a88}.btn.primary,button.primary{background:var(--orange);border-color:var(--orange);color:#1c1205;font-weight:800}.layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;align-items:start}.maincol,.side{display:grid;gap:16px}.card{background:linear-gradient(145deg,rgba(22,35,46,.96),rgba(15,25,34,.96));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:19px;min-width:0;animation:rise .55s both}@keyframes rise{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}.card h2{font-size:15px;margin:0 0 15px;letter-spacing:-.01em}.pricehead{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap}.price{font-size:clamp(30px,5vw,45px);font-weight:700;letter-spacing:-.045em;font-variant-numeric:tabular-nums}.price-meta{color:var(--muted);font-size:12px;margin-top:5px}.live{display:inline-flex;align-items:center;gap:6px;color:var(--green);font-size:12px}.dot{width:7px;height:7px;background:var(--green);border-radius:50%;box-shadow:0 0 0 4px #32c48d1b}.periods{display:flex;gap:5px;flex-wrap:wrap}.periods button{font-size:12px;padding:7px 10px;color:var(--muted)}.periods button.active{color:#1c1205;background:var(--orange);border-color:var(--orange);font-weight:800}#chart{height:390px;width:100%;margin-top:14px}.chart-foot{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:11px;margin-top:7px;flex-wrap:wrap}.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.metric{background:rgba(255,255,255,.025);border:1px solid var(--line);border-radius:14px;padding:13px}.metric label{display:block;color:var(--muted);font-size:11px;margin-bottom:7px}.metric strong{font-size:18px;letter-spacing:-.02em;overflow-wrap:anywhere}.muted{color:var(--muted)}.small{font-size:12px;line-height:1.5}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:11px;color:var(--muted)}input,select{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:#0b141c;color:var(--ink);font:inherit;min-width:0}input:focus,select:focus{outline:1px solid var(--orange);border-color:var(--orange)}.form-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}.strategy{display:flex;align-items:flex-start;gap:10px;padding:12px;border:1px solid var(--line);border-radius:13px;margin-bottom:8px;cursor:pointer}.strategy input{width:auto;margin-top:4px;accent-color:var(--orange)}.strategy b{font-size:13px;display:block}.strategy span{font-size:11px;color:var(--muted);display:block;margin-top:3px}.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;font-size:12px;min-width:600px}th,td{text-align:left;padding:11px 8px;border-bottom:1px solid var(--line);white-space:nowrap}th{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.08em}.pill{display:inline-flex;padding:4px 7px;border-radius:99px;background:#f7931a1a;color:var(--orange);font-size:10px;font-weight:700}.danger{color:var(--red)}.good{color:var(--green)}.empty{padding:20px;text-align:center;color:var(--muted);font-size:12px}.status{font-size:11px;color:var(--muted);margin-top:10px}.notice{border:1px solid #f7931a40;background:#f7931a0d;border-radius:12px;padding:12px;color:#e9c99c;font-size:12px;line-height:1.5}.back{color:var(--muted)}.delete{color:var(--red);padding:5px 8px}.footer{color:var(--muted);font-size:11px;margin-top:18px;text-align:center}
+@media(max-width:980px){.layout{grid-template-columns:1fr}.side{grid-template-columns:repeat(2,minmax(0,1fr))}.side .card:first-child{grid-row:span 2}}@media(max-width:620px){main{padding-top:15px}.side{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}.metrics .metric:last-child{grid-column:1/-1}#chart{height:310px}.card{padding:15px}.formgrid{grid-template-columns:1fr}.field.full{grid-column:auto}.pricehead{display:block}.pricehead .periods{margin-top:14px}}
+</style></head>
+<body><main>
+<header class="top"><div class="brand"><div class="coin">₿</div><div><div class="eyebrow">Módulo independiente</div><h1 class="title">Bitcoin Trading</h1><div class="subtitle">Kraken Futures · Michael Saylor · Doble Saylor</div></div></div><div class="top-actions"><span class="live"><i class="dot"></i><span id="connection">Conectando precio…</span></span><a class="btn back" href="index.html">← Volver a mi cartera</a></div></header>
+<div class="layout"><div class="maincol">
+<section class="card"><div class="pricehead"><div><div class="eyebrow">BTC / USDT · mercado spot de Binance</div><div class="price" id="livePrice">—</div><div class="price-meta" id="priceMeta">Esperando cotización…</div></div><div class="periods" id="periods"><button data-tf="15m">15m</button><button data-tf="1h" class="active">1H</button><button data-tf="4h">4H</button><button data-tf="1d">1D</button><button data-tf="1w">1S</button><button data-tf="1M">1M</button></div></div><div id="chart"></div><div class="chart-foot"><span id="chartStatus">Cargando velas históricas…</span><span>Las líneas de compra/liquidación son estimaciones introducidas por ti.</span></div></section>
+<section class="card"><h2>Resumen de exposición</h2><div class="metrics"><div class="metric"><label>Capital destinado (USDT)</label><strong id="mCapital">0,00</strong></div><div class="metric"><label>Exposición nominal</label><strong id="mExposure">0,00</strong></div><div class="metric"><label>PNL no realizado aprox.</label><strong id="mPnl">—</strong></div><div class="metric"><label>Precio medio de entrada</label><strong id="mEntry">—</strong></div><div class="metric"><label>Precio liquidación manual</label><strong id="mLiq">—</strong></div><div class="metric"><label>Operaciones abiertas</label><strong id="mOpen">0</strong></div></div><p class="status">Estimaciones informativas: no replican automáticamente el motor de margen ni las comisiones de Kraken Futures.</p></section>
+<section class="card"><h2>Mis operaciones</h2><div class="tablewrap"><table><thead><tr><th>Fecha</th><th>Estrategia</th><th>Lado</th><th>Margen USDT</th><th>Apalancamiento</th><th>Entrada BTC</th><th>Liquidación manual</th><th>Estado</th><th></th></tr></thead><tbody id="tradesBody"><tr><td colspan="9" class="empty">Todavía no has registrado operaciones.</td></tr></tbody></table></div><p class="status" id="storageStatus">Preparando almacenamiento…</p><p class="small muted">Las operaciones se sincronizan mediante el servidor de Cloudflare con la rama de pruebas de GitHub. Si no hay conexión, se conserva una copia local en este navegador.</p></section>
+</div><aside class="side">
+<section class="card"><h2>Registrar operación</h2><form id="tradeForm"><div class="field full"><label for="strategy">Estrategia</label><select id="strategy"><option value="Michael Saylor">Michael Saylor</option><option value="Doble Saylor">Doble Saylor</option><option value="Manual">Manual</option></select></div><div class="formgrid" style="margin-top:10px"><div class="field"><label for="side">Dirección</label><select id="side"><option value="long">Long</option><option value="short">Short</option></select></div><div class="field"><label for="status">Estado</label><select id="status"><option value="open">Abierta</option><option value="closed">Cerrada</option></select></div><div class="field"><label for="margin">Margen usado (USDT)</label><input id="margin" type="number" min="0.01" step="any" required placeholder="37"></div><div class="field"><label for="leverage">Apalancamiento</label><select id="leverage"><option value="5">5×</option><option value="10" selected>10×</option><option value="2">2×</option><option value="3">3×</option><option value="20">20×</option><option value="50">50×</option><option value="100">100×</option></select></div><div class="field"><label for="entry">Precio de entrada (USDT)</label><input id="entry" type="number" min="0.01" step="any" required placeholder="Precio BTC"></div><div class="field"><label for="liq">Liquidación (opcional)</label><input id="liq" type="number" min="0" step="any" placeholder="Tu precio estimado"></div><div class="field full"><label for="notes">Notas (opcional)</label><input id="notes" maxlength="200" placeholder="Bala 1, margen añadido…"></div></div><div class="form-actions"><button class="primary" type="submit">Guardar operación</button><button type="button" id="usePrice">Usar precio actual</button></div></form><div class="status" id="formMsg" role="status"></div></section>
+<section class="card"><h2>Reglas de referencia</h2><div class="notice"><b>Michael Saylor</b><br>Plantilla inicial de estrategia con apalancamiento 5×. Configura cada bala manualmente según tus reglas.</div><div class="notice" style="margin-top:9px"><b>Doble Saylor</b><br>Plantilla inicial con apalancamiento 10× y registro separado de las balas. Introduce el margen y el precio de liquidación estimado de tu plataforma.</div><p class="small muted">No se conectan órdenes ni se ejecutan operaciones en Kraken. Este panel es un registro y simulador manual.</p></section>
+<section class="card"><h2>Conexión de datos</h2><p class="small muted">El precio y las velas proceden de endpoints públicos de Binance. No se requieren claves API para consultar el mercado.</p><div class="status" id="apiStatus">API pública · esperando conexión</div></section>
+ <section class="card" id="syncSettings"><h2>Sincronización compartida</h2><p class="small muted">Bitcoin usa el repositorio y el token configurados en los Ajustes de la cartera. Para configurarlos o comprobar la conexión, vuelve a la cartera principal.</p><div class="form-actions"><a class="btn" href="index.html">Abrir ajustes de la cartera →</a><button type="button" id="syncNow" class="primary">Sincronizar operaciones</button></div><div class="status" id="syncSettingsStatus">Leyendo ajustes compartidos…</div></section>
+</aside></div><p class="footer">Herramienta de seguimiento personal. Los niveles de liquidación manuales no sustituyen el cálculo oficial de Kraken Futures.</p></main>
+<script>
+(()=> {
+const $=s=>document.querySelector(s), fmt=(n,d=2)=>Number.isFinite(Number(n))?Number(n).toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';
+const money=n=>Number.isFinite(Number(n))?new Intl.NumberFormat('es-ES',{style:'currency',currency:'USD',maximumFractionDigits:2}).format(n):'—';
+let currentPrice=null, chart=null,candleSeries=null, socket=null, reconnectTimer=null, selectedTf='1h', candles=[], trades=[];
+const STORE='cartera:bitcoin:trades:v1';
+ const SETTINGS_KEY='cartera:ajustes';
+ const BITCOIN_FILE='bitcoin-operaciones.json';
+ const BITCOIN_BRANCH='cartera-bitcoin';
+ let saveQueue=Promise.resolve();
+ function getSharedSettings(){try{return JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}')}catch{return {}}}
+ function localSave(){try{localStorage.setItem(STORE,JSON.stringify(trades));return true}catch{return false}}
+ function setStorageStatus(message,isError=false){$('#storageStatus').textContent=message;$('#storageStatus').style.color=isError?'#ff647c':'';const s=$('#syncSettingsStatus');if(s){s.textContent=message;s.style.color=isError?'#ff647c':''}}
+ function ghHeaders(token){return {Authorization:'Bearer '+token,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}}
+ function b64utf8(value){return btoa(unescape(encodeURIComponent(value)))}
+ async function ghReadTrades(settings){
+  const url=`https://api.github.com/repos/${encodeURIComponent(settings.repo)}/contents/${BITCOIN_FILE}?ref=${encodeURIComponent(BITCOIN_BRANCH)}`;
+  const r=await fetch(url,{headers:ghHeaders(settings.token),cache:'no-store'});
+  if(r.status===404)return {operaciones:[],sha:null};
+  if(!r.ok)throw new Error(r.status===401?'Token inválido o caducado':r.status===403?'El token no tiene permiso Contents: Read and write':'GitHub respondió HTTP '+r.status);
+  const data=await r.json();
+  let decoded;try{decoded=decodeURIComponent(escape(atob((data.content||'').replace(/\s/g,''))))}catch{decoded=atob((data.content||'').replace(/\s/g,''))}
+  const json=JSON.parse(decoded);
+  return {operaciones:Array.isArray(json)?json:(Array.isArray(json.operaciones)?json.operaciones:[]),sha:data.sha};
+ }
+ async function ghWriteTrades(settings,ops){
+  const current=await ghReadTrades(settings);
+  const url=`https://api.github.com/repos/${encodeURIComponent(settings.repo)}/contents/${BITCOIN_FILE}`;
+  const body={message:'Actualizar operaciones Bitcoin',content:b64utf8(JSON.stringify({operaciones:ops},null,2)+'\n'),branch:BITCOIN_BRANCH};
+  if(current.sha)body.sha=current.sha;
+  const r=await fetch(url,{method:'PUT',headers:{...ghHeaders(settings.token),'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok){let msg='GitHub respondió HTTP '+r.status;try{msg=(await r.json()).message||msg}catch{};throw new Error(msg)}
+ }
+ async function loadTrades(){
+  const localRaw=(()=>{try{return JSON.parse(localStorage.getItem(STORE)||'[]')}catch{return []}})();
+  trades=Array.isArray(localRaw)?localRaw:[];
+  const settings=getSharedSettings();
+  if(!settings.syncOps||!settings.repo||!settings.token){setStorageStatus('Solo en este dispositivo: activa la sincronización en Ajustes de la cartera.',false);renderTrades();return}
+  setStorageStatus('Cargando operaciones Bitcoin desde GitHub…');
+  try{const remote=await ghReadTrades(settings);trades=remote.operaciones;localSave();setStorageStatus('Sincronizado con GitHub ✓ · '+BITCOIN_FILE+' · rama '+BITCOIN_BRANCH)}
+  catch(e){setStorageStatus('No se pudo sincronizar: '+e.message+'. Se conservan los datos locales.',true)}
+  renderTrades();
+ }
+ async function saveTrades(){
+  localSave();renderTrades();
+  saveQueue=saveQueue.then(async()=>{
+   const settings=getSharedSettings();
+   if(!settings.syncOps||!settings.repo||!settings.token){setStorageStatus('Guardado solo en este dispositivo. Activa la sincronización en Ajustes de la cartera.',false);return}
+   setStorageStatus('Guardando operaciones Bitcoin en GitHub…');
+   try{await ghWriteTrades(settings,trades);setStorageStatus('Sincronizado con GitHub ✓ · '+BITCOIN_FILE+' · rama '+BITCOIN_BRANCH)}
+   catch(e){setStorageStatus('Error al sincronizar Bitcoin: '+e.message+'. La copia local se conserva.',true)}
+  });
+  await saveQueue;
+ }
+ $('#syncNow')?.addEventListener('click',()=>loadTrades());
+function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function initChart(){if(!window.LightweightCharts){$('#chartStatus').textContent='No se pudo cargar la librería de gráficos.';return}
+ chart=LightweightCharts.createChart($('#chart'),{width:$('#chart').clientWidth,height:390,layout:{background:{type:'solid',color:'#121d27'},textColor:'#8da0ae'},grid:{vertLines:{color:'rgba(255,255,255,.045)'},horzLines:{color:'rgba(255,255,255,.06)'}},rightPriceScale:{borderColor:'rgba(255,255,255,.1)'},timeScale:{borderColor:'rgba(255,255,255,.1)',timeVisible:true,secondsVisible:false},crosshair:{mode:0}});
+ candleSeries=chart.addCandlestickSeries({upColor:'#32c48d',downColor:'#ff647c',borderUpColor:'#32c48d',borderDownColor:'#ff647c',wickUpColor:'#32c48d',wickDownColor:'#ff647c'});
+ new ResizeObserver(()=>chart.applyOptions({width:$('#chart').clientWidth})).observe($('#chart'));
+}
+const intervals={'15m':'15m','1h':'1h','4h':'4h','1d':'1d','1w':'1w','1M':'1M'};
+async function loadCandles(tf){selectedTf=tf;$('#periods').querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.tf===tf));$('#chartStatus').textContent='Cargando histórico…';
+ try{const r=await fetch(`https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=${intervals[tf]}&limit=500`,{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const raw=await r.json();candles=raw.map(k=>({time:Math.floor(k[0]/1000),open:+k[1],high:+k[2],low:+k[3],close:+k[4]}));candleSeries.setData(candles);drawTradeLines();chart.timeScale().fitContent();$('#chartStatus').textContent=`${candles.length} velas cargadas · Binance`;$('#apiStatus').textContent='API pública conectada · BTCUSDT';}
+ catch(e){$('#chartStatus').textContent='No se pudo cargar el histórico de Binance. Comprueba la conexión o inténtalo de nuevo.';$('#apiStatus').textContent='Error de conexión: '+e.message}
+}
+function drawTradeLines(){if(!candleSeries)return;candleSeries.setMarkers([]);const markers=[];for(const t of trades){if(t.status!=='open')continue;const time=Math.floor(new Date(t.date).getTime()/1000);if(t.entry>0)markers.push({time:nearestCandleTime(time),position:t.side==='long'?'belowBar':'aboveBar',color:'#f7931a',shape:t.side==='long'?'arrowUp':'arrowDown',text:`${t.strategy} · entrada ${fmt(t.entry,0)}`})}try{candleSeries.setMarkers(markers.sort((a,b)=>a.time-b.time))}catch{}}
+function nearestCandleTime(t){if(!candles.length)return t;let best=candles[0].time,delta=Math.abs(best-t);for(const c of candles){const d=Math.abs(c.time-t);if(d<delta){best=c.time;delta=d}}return best}
+function connectSocket(){if(socket)try{socket.close()}catch{};socket=new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@trade');socket.onopen=()=>{$('#connection').textContent='Precio conectado';$('#apiStatus').textContent='WebSocket activo · actualizaciones de mercado';};socket.onmessage=e=>{try{const d=JSON.parse(e.data);currentPrice=+d.p;$('#livePrice').textContent='$'+fmt(currentPrice,2);$('#priceMeta').textContent='Última operación de mercado · '+new Date(d.T).toLocaleTimeString('es-ES');updateMetrics()}catch{}};socket.onerror=()=>{$('#connection').textContent='Reconectando…'};socket.onclose=()=>{$('#connection').textContent='Reconectando…';clearTimeout(reconnectTimer);reconnectTimer=setTimeout(connectSocket,4000)}}
+function updateMetrics(){const open=trades.filter(t=>t.status==='open'),capital=open.reduce((a,t)=>a+t.margin,0),exposure=open.reduce((a,t)=>a+t.margin*t.leverage,0),pnl=open.reduce((a,t)=>a+(currentPrice&&t.entry?(currentPrice-t.entry)*(t.side==='long'?1:-1)*(t.margin*t.leverage/t.entry):0),0);$('#mCapital').textContent=fmt(capital);$('#mExposure').textContent=fmt(exposure);$('#mPnl').textContent=currentPrice?fmt(pnl):'—';$('#mPnl').className=pnl>=0?'good':'danger';$('#mEntry').textContent=open.length?fmt(open.reduce((a,t)=>a+t.entry*t.margin*t.leverage,0)/Math.max(1,open.reduce((a,t)=>a+t.margin*t.leverage,0))):'—';$('#mLiq').textContent=open.some(t=>t.liq)?open.filter(t=>t.liq).map(t=>fmt(t.liq,0)).join(' / '):'No indicada';$('#mOpen').textContent=open.length}
+function renderTrades(){const body=$('#tradesBody');if(!trades.length){body.innerHTML='<tr><td colspan="9" class="empty">Todavía no has registrado operaciones.</td></tr>';updateMetrics();drawTradeLines();return}body.innerHTML=[...trades].sort((a,b)=>b.date.localeCompare(a.date)).map(t=>`<tr><td>${escapeHtml(t.date)}</td><td><span class="pill">${escapeHtml(t.strategy)}</span></td><td>${t.side==='long'?'Long':'Short'}</td><td>${fmt(t.margin)}</td><td>${t.leverage}×</td><td>${fmt(t.entry,2)}</td><td>${t.liq?fmt(t.liq,2):'—'}</td><td>${t.status==='open'?'<span class="good">Abierta</span>':'Cerrada'}</td><td><button class="delete" data-delete="${t.id}" aria-label="Eliminar operación">Eliminar</button></td></tr>`).join('');updateMetrics();drawTradeLines()}
+$('#periods').addEventListener('click',e=>{const b=e.target.closest('button[data-tf]');if(b)loadCandles(b.dataset.tf)});
+$('#usePrice').addEventListener('click',()=>{if(currentPrice)$('#entry').value=currentPrice.toFixed(2);else $('#formMsg').textContent='Aún no hay precio disponible.'});
+$('#tradeForm').addEventListener('submit',e=>{e.preventDefault();const entry=Number($('#entry').value),margin=Number($('#margin').value),leverage=Number($('#leverage').value),liq=Number($('#liq').value||0);if(!(entry>0&&margin>0&&leverage>0)){ $('#formMsg').textContent='Revisa el precio, el margen y el apalancamiento.';return}trades.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),date:new Date().toISOString().slice(0,10),strategy:$('#strategy').value,side:$('#side').value,status:$('#status').value,margin,leverage,entry,liq:liq||null,notes:$('#notes').value});saveTrades();$('#formMsg').textContent='Operación añadida; comprobando guardado…';$('#notes').value='';$('#liq').value='';});
+$('#tradesBody').addEventListener('click',e=>{const b=e.target.closest('[data-delete]');if(!b)return;if(confirm('¿Eliminar esta operación?')){trades=trades.filter(t=>t.id!==b.dataset.delete);saveTrades()}});
+async function checkSyncConnection(){
+ const status=$('#syncSettingsStatus');
+ status.textContent='Comprobando conexión con el servidor…';
+ try{
+  const r=await fetch(API_BASE+'/api/health',{cache:'no-store'});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  const data=await r.json();
+  if(!data.ok)throw new Error('El servidor no confirmó disponibilidad');
+  status.textContent='Conexión correcta ✓ · rama '+(data.branch||'de pruebas');
+  status.style.color='#32c48d';
+ }catch(e){
+  status.textContent='No se pudo conectar: '+e.message;
+  status.style.color='#ff647c';
+ }
+}
+
+$('#syncNow').addEventListener('click',async()=>{
+ $('#syncSettingsStatus').textContent='Actualizando operaciones…';
+ await loadTrades();
+ $('#syncSettingsStatus').textContent=$('#storageStatus').textContent;
+});
+loadTrades();initChart();loadCandles('1h');connectSocket();renderTrades();
+})();
+</script></body></html>
