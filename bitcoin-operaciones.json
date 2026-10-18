@@ -1,18 +1,6 @@
 {
   "operaciones": [
     {
-      "id": "16c7615f-2a71-42c9-9010-353fa339bc68",
-      "date": "2026-10-18",
-      "strategy": "Michael Saylor",
-      "side": "long",
-      "status": "open",
-      "margin": 37,
-      "leverage": 10,
-      "entry": 82000,
-      "liq": 69000,
-      "notes": "vala 10"
-    },
-    {
       "id": "11fa35d4-01fa-4bac-89d3-8bd71c070c78",
       "date": "2026-10-18",
       "strategy": "Michael Saylor",
