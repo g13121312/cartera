@@ -1,3 +1,124 @@
 {
-  "operaciones": []
+  "operaciones": [
+    {
+      "id": "saylor-tracker-1",
+      "date": "2026-10-08",
+      "strategy": "Michael Saylor",
+      "side": "long",
+      "status": "open",
+      "margin": 112.09,
+      "leverage": 5,
+      "entry": 81719,
+      "liq": null,
+      "notes": "Entrada 1 · Inicio · 4,5 balas"
+    },
+    {
+      "id": "saylor-tracker-2",
+      "date": "2026-10-09",
+      "strategy": "Michael Saylor",
+      "side": "long",
+      "status": "open",
+      "margin": 24.91,
+      "leverage": 5,
+      "entry": 83326,
+      "liq": null,
+      "notes": "Entrada 2 · Regular · 1 bala"
+    },
+    {
+      "id": "saylor-tracker-3",
+      "date": "2026-10-11",
+      "strategy": "Michael Saylor",
+      "side": "long",
+      "status": "open",
+      "margin": 24.91,
+      "leverage": 5,
+      "entry": 83644,
+      "liq": null,
+      "notes": "Entrada 3 · Regular · 1 bala"
+    },
+    {
+      "id": "saylor-tracker-4",
+      "date": "2026-10-12",
+      "strategy": "Michael Saylor",
+      "side": "long",
+      "status": "open",
+      "margin": 49.82,
+      "leverage": 5,
+      "entry": 82323,
+      "liq": null,
+      "notes": "Entrada 4 · Regular · 2 balas"
+    },
+    {
+      "id": "saylor-tracker-5",
+      "date": "2026-10-13",
+      "strategy": "Michael Saylor",
+      "side": "long",
+      "status": "open",
+      "margin": 24.91,
+      "leverage": 5,
+      "entry": 83172,
+      "liq": null,
+      "notes": "Entrada 5 · Regular · 1 bala"
+    },
+    {
+      "id": "saylor-tracker-6",
+      "date": "2026-10-14",
+      "strategy": "Michael Saylor",
+      "side": "long",
+      "status": "open",
+      "margin": 49.82,
+      "leverage": 5,
+      "entry": 81702,
+      "liq": null,
+      "notes": "Entrada 6 · Regular · 2 balas"
+    },
+    {
+      "id": "saylor-tracker-7",
+      "date": "2026-10-15",
+      "strategy": "Michael Saylor",
+      "side": "long",
+      "status": "open",
+      "margin": 49.82,
+      "leverage": 5,
+      "entry": 82297,
+      "liq": null,
+      "notes": "Entrada 7 · Regular · 2 balas"
+    },
+    {
+      "id": "saylor-tracker-8",
+      "date": "2026-10-16",
+      "strategy": "Michael Saylor",
+      "side": "long",
+      "status": "open",
+      "margin": 74.73,
+      "leverage": 5,
+      "entry": 81317,
+      "liq": null,
+      "notes": "Entrada 8 · Regular · 3 balas"
+    },
+    {
+      "id": "saylor-tracker-9",
+      "date": "2026-10-17",
+      "strategy": "Michael Saylor",
+      "side": "long",
+      "status": "open",
+      "margin": 49.82,
+      "leverage": 5,
+      "entry": 81515,
+      "liq": null,
+      "notes": "Entrada 9 · Regular · 2 balas"
+    },
+    {
+      "id": "saylor-tracker-10",
+      "date": "2026-10-10",
+      "strategy": "Michael Saylor",
+      "side": "long",
+      "status": "open",
+      "margin": 49.82,
+      "leverage": 5,
+      "entry": 82691,
+      "liq": null,
+      "notes": "Entrada 10 · Regular · 2 balas · fecha corregida a 10 de octubre"
+    }
+  ]
 }
