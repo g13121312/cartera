@@ -1,0 +1,62 @@
+name: Actualizar NAV Bitcoin
+
+on:
+  schedule:
+    - cron: "17 6 * * *"
+    - cron: "43 17 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: actualizar-nav-bitcoin
+  cancel-in-progress: false
+
+jobs:
+  nav:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Descargar rama cartera-bitcoin
+        uses: actions/checkout@v5
+        with:
+          ref: cartera-bitcoin
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "mstarpy>=11,<12"
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb
+
+      - name: Descargar NAV
+        id: nav
+        continue-on-error: true
+        env:
+          SELENIUM_CHROME_FLAGS: "--no-sandbox --disable-dev-shm-usage --disable-gpu"
+          SELENIUM_DRIVER_WAIT_TIME: "10"
+        run: xvfb-run -a python update_navs.py
+
+      - name: Guardar cambios en cartera-bitcoin
+        run: |
+          git config user.name "nav-bot"
+          git config user.email "nav-bot@users.noreply.github.com"
+          git add data
+          if git diff --cached --quiet; then
+            echo "Sin datos nuevos: no hay commit."
+          else
+            git commit -m "NAV Bitcoin $(date -u +%F)"
+            git push origin HEAD:cartera-bitcoin
+          fi
+
+      - name: Avisar si la descarga ha fallado
+        if: steps.nav.outcome == 'failure'
+        run: |
+          echo "::error::La descarga de NAV ha fallado. Mira el resumen del paso 'Descargar NAV'."
+          exit 1
