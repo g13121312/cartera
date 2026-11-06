@@ -21,6 +21,8 @@ más de STALE_DAYS días sin dato nuevo (el workflow lo deja en rojo para que te
 """
 import csv
 import json
+import importlib.metadata
+import re
 import statistics
 import subprocess
 import sys
@@ -40,7 +42,6 @@ UA = {"User-Agent": "Mozilla/5.0 (compatible; cartera-nav/3.0)"}
 SCHEMA = 2  # mismo formato que v2: no se pierde lo ya descargado
 MIN_POINTS = 30  # menos datos que esto = respuesta sospechosa
 STALE_DAYS = 6  # último dato más viejo que esto = aviso y run en rojo
-MSTAR_FALLBACK_DAYS = 3  # si Morningstar lleva más de esto sin NAV, probar Yahoo
 WANT_CCY = "EUR"  # divisa de tus clases
 
 
@@ -179,16 +180,25 @@ def fetch_yahoo_best(isin, hint, cache):
 
 # ------------------------------------------------------------- Morningstar
 def _import_mstarpy():
+    """Carga mstarpy y fuerza la versión 11.1.1 o superior.
+
+    Morningstar cambió el HTML usado para obtener el token MaaS; 11.1.1 es
+    la versión publicada el 3-11-2026. Evita reutilizar una versión anterior
+    que puede seguir instalada en el runner.
+    """
     try:
-        import mstarpy
-        return mstarpy
-    except ImportError:
+        installed = importlib.metadata.version("mstarpy")
+        nums = tuple(int(x) for x in re.findall(r"\d+", installed)[:3])
+    except importlib.metadata.PackageNotFoundError:
+        nums = (0,)
+    if nums < (11, 1, 1):
         subprocess.run(
-            [sys.executable, "-m", "pip", "install", "--quiet", "mstarpy>=11,<12"],
-            check=False, timeout=300,
+            [sys.executable, "-m", "pip", "install", "--quiet", "--upgrade", "mstarpy==11.1.1"],
+            check=True, timeout=300,
         )
-        import mstarpy  # si sigue sin estar, ImportError -> se captura fuera
-        return mstarpy
+    import mstarpy
+    print(f"  mstarpy instalado: {importlib.metadata.version('mstarpy')}")
+    return mstarpy
 
 
 def open_mstar_session():
@@ -702,46 +712,18 @@ def main():
         base = series.get(isin, {})
         new, src, notes = None, None, []
 
-        mstar_data = None
         if session is not None:
             try:
-                mstar_data = fetch_mstar(isin, session)
-                mstar_last = max(mstar_data) if mstar_data else None
-                mstar_age = ((date.today() - date.fromisoformat(mstar_last)).days
-                             if mstar_last else 999)
-                if mstar_age <= MSTAR_FALLBACK_DAYS and len(mstar_data) >= MIN_POINTS:
-                    new, src = mstar_data, "morningstar"
-                else:
-                    notes.append(
-                        f"Morningstar: histórico válido pero retrasado ({mstar_last or 'sin fecha'}, "
-                        f"{mstar_age} días); se prueba Yahoo como respaldo"
-                    )
+                new, src = fetch_mstar(isin, session), "morningstar"
             except Exception as e:
                 notes.append(f"Morningstar: {short(e)}")
-
-        # Yahoo se prueba también cuando Morningstar responde correctamente pero está
-        # retrasado. Solo se acepta como respaldo si es reciente y no avisa de otra divisa.
-        if not new:
+        if not new or len(new) < MIN_POINTS:
             try:
-                sym, yahoo_data, ynotes = fetch_yahoo_best(
-                    isin, (f.get("ticker") or "").strip(), tickers
-                )
+                sym, new, ynotes = fetch_yahoo_best(isin, (f.get("ticker") or "").strip(), tickers)
+                src = f"yahoo:{sym}"
                 notes += ynotes
-                yahoo_last = max(yahoo_data) if yahoo_data else None
-                yahoo_age = ((date.today() - date.fromisoformat(yahoo_last)).days
-                             if yahoo_last else 999)
-                wrong_ccy = any("cotiza en" in note for note in ynotes)
-                if is_good(yahoo_data, None) and not wrong_ccy:
-                    new, src = yahoo_data, f"yahoo:{sym}"
-                    if mstar_data:
-                        notes.append("Yahoo reciente: se incorporarán únicamente fechas posteriores si coinciden los valores")
-                else:
-                    notes.append(
-                        f"Yahoo descartado como respaldo: último dato {yahoo_last or 'ninguno'} "
-                        f"({yahoo_age} días)" + (", divisa distinta" if wrong_ccy else "")
-                    )
             except Exception as e:
-                notes.append(f"Yahoo: {short(e, 200)}")
+                notes.append(short(e, 200))
                 new, src = None, None
 
         merged, msrc = combine(base, sources.get(isin), new, src or "", notes)
