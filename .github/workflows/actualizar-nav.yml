@@ -2,9 +2,6 @@ name: Actualizar NAV
 
 on:
   schedule:
-    # Todos los días (fines de semana incluidos), dos veces: los fondos publican el
-    # valor liquidativo con 1-2 días de retraso y a horas distintas.
-    # GitHub usa UTC: 06:17 UTC = 08:17 en España (verano) y 17:43 UTC = 19:43.
     - cron: "17 6 * * *"
     - cron: "43 17 * * *"
   workflow_dispatch:
@@ -19,9 +16,11 @@ concurrency:
 jobs:
   nav:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-python@v6
         with:
@@ -30,12 +29,10 @@ jobs:
       - name: Instalar dependencias
         run: |
           python -m pip install --upgrade pip
-          python -m pip install "mstarpy>=11,<12"
+          python -m pip install "mstarpy>=11.1.1,<12"
           sudo apt-get update -qq
           sudo apt-get install -y -qq xvfb
 
-      # mstarpy abre un Chrome real (Selenium) para pasar el filtro anti-bots de
-      # Morningstar. En el runner no hay pantalla: xvfb-run le da una virtual.
       - name: Descargar NAV
         id: nav
         continue-on-error: true
@@ -44,22 +41,39 @@ jobs:
           SELENIUM_DRIVER_WAIT_TIME: "10"
         run: xvfb-run -a python update_navs.py
 
-      # Se guarda aunque el paso anterior haya salido en rojo (datos parciales o viejos).
-      - name: Guardar cambios
+      # No hacemos pull --rebase sobre navs.json: si main cambió durante la descarga,
+      # se parte de la última versión y se vuelve a ejecutar el scraper. Así se evita
+      # el conflicto de contenido que abortó el run del 6 nov 2026.
+      - name: Guardar cambios sin conflictos de rebase
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          git config user.name "nav-bot"
-          git config user.email "nav-bot@users.noreply.github.com"
-          git add data
-          if git diff --cached --quiet; then
-            echo "Sin datos nuevos: no hay commit."
-          else
-            git commit -m "NAV $(date -u +%F)"
-            git pull --rebase --autostash
-            git push
-          fi
+          set -e
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]; then
+              echo "main ha avanzado; regenerando NAV sobre la última versión (intento $attempt)."
+              git reset --hard origin/main
+              xvfb-run -a python update_navs.py || true
+            fi
+            git add data
+            if ! git diff --cached --quiet; then
+              git config user.name "nav-bot"
+              git config user.email "nav-bot@users.noreply.github.com"
+              git commit -m "NAV $(date -u +%F)"
+            else
+              echo "Sin datos nuevos: no hay commit."
+              exit 0
+            fi
+            if git push origin HEAD:main; then
+              echo "NAV publicado correctamente."
+              exit 0
+            fi
+            echo "Push rechazado por un cambio concurrente; se reintentará desde main."
+          done
+          echo "No se pudo publicar tras 3 intentos."
+          exit 1
 
-      # Si algún fondo lleva demasiados días sin dato (o todo falló), el run queda
-      # en rojo y GitHub te avisa por email. Antes salía siempre en verde.
       - name: Avisar si los datos están desactualizados
         if: steps.nav.outcome == 'failure'
         run: |
