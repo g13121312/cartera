@@ -2342,11 +2342,11 @@ function renderPortfolioChart(){
       if (!applied || applied[0] < basePoint[0]) continue;
       (buys[applied[0]] ||= []).push(op);
     }
-    return { fund:f, index:i, firstBuy, base:basePoint[1], visible, buys };
+    return { fund:f, index:i, firstBuy, base:basePoint[1], visible, buys, opsWeight:ops.reduce((n,o)=>n+Number(o.importe||0),0) };
   }).filter(Boolean);
   const labels = [...new Set(funds.flatMap(f => f.visible.map(p => p[0])))].sort();
   if (!labels.length){ host.innerHTML = '<div class="empty">No hay NAV dentro del periodo elegido.</div>'; return; }
-  const datasets = funds.map(f => {
+  const fundDatasets = funds.map(f => {
     const values = new Map(f.visible.map(p => [p[0], (p[1] / f.base - 1) * 100]));
     const markers = labels.map(d => (f.buys[d] || []).length ? 5 : 0);
     return {
@@ -2358,16 +2358,24 @@ function renderPortfolioChart(){
       pointBorderColor:css("--panel-solid"), _purchases:f.buys
     };
   });
+  // Índice conjunto ponderado por el capital aportado a cada fondo.
+  const portfolioValues = labels.map((date,idx)=>{
+    let weighted=0,weight=0;
+    funds.forEach((f,i)=>{const value=fundDatasets[i].data[idx];if(value==null)return;weighted+=value*f.opsWeight;weight+=f.opsWeight;});
+    return weight ? weighted/weight : null;
+  });
+  const portfolioDataset={label:"Cartera · conjunto",data:portfolioValues,borderColor:"#F2C66D",backgroundColor:"#F2C66D",borderWidth:4.5,tension:.22,spanGaps:true,fill:false,pointRadius:0,pointHoverRadius:5,pointHitRadius:12,pointBackgroundColor:"#F2C66D",pointBorderColor:css("--panel-solid"),order:0};
+  const datasets=[portfolioDataset,...fundDatasets];
   const fmtDate = d => new Date(d+"T00:00:00").toLocaleDateString("es-ES",{day:"2-digit",month:"short",year:"numeric"});
   host.innerHTML = `<div class="portfolio-chart-head">
-    <div><div class="eyebrow">Evolución individual</div><h2>Mi cartera</h2>
-    <p>Rentabilidad de cada fondo desde tu primera compra (o desde el inicio del periodo seleccionado). Cada punto marca una compra tuya.</p></div>
+    <div><div class="eyebrow">Evolución de la inversión</div><h2>Mi cartera</h2>
+    <p>La línea dorada muestra la evolución conjunta estimada; las líneas de color muestran cada fondo. Pulsa el nombre de cualquier fondo en la leyenda para ocultarlo o volver a mostrarlo. Cada punto marca una compra tuya.</p></div>
     <div class="seg scroll" id="portfolioTf" data-seg="portfolioTf" role="group" aria-label="Temporalidad">
       ${[["MAX","Todo"],["YTD","Año"],["1A","1 año"],["6M","6 meses"],["3M","3 meses"],["1M","1 mes"]].map(([k,l])=>`<button type="button" data-ptf="${k}" aria-pressed="${tf===k}">${l}</button>`).join("")}
     </div>
   </div>
   <div class="chartbox portfolio-chartbox"><canvas id="portfolioLineChart" aria-label="Rentabilidad de cada fondo desde las compras" role="img"></canvas></div>
-  <div class="portfolio-chart-legend">${funds.map(f=>`<span><i style="background:${colors[f.index % colors.length]}"></i>${esc(f.fund.name)}</span>`).join("")}</div>
+  
   <p class="portfolio-chart-note">La línea muestra la variación porcentual del NAV, no el valor en euros de tus posiciones. En «Todo», cada fondo parte de su primera compra registrada. En periodos más cortos, la línea se reescala al inicio de ese periodo. Los puntos se colocan en el primer NAV disponible en la fecha de cada compra o después.</p>`;
   host.querySelectorAll("[data-ptf]").forEach(b => b.onclick = () => { state.portfolioTf=b.dataset.ptf; renderPortfolioChart(); });
   seg($("#portfolioTf"));
@@ -2377,7 +2385,7 @@ function renderPortfolioChart(){
     options:{
       responsive:true,maintainAspectRatio:false,animation:false,interaction:{mode:"index",intersect:false},
       plugins:{
-        legend:{display:false},
+        legend:{display:true,position:"bottom",labels:{color:muted,usePointStyle:true,pointStyle:"line",boxWidth:24,padding:16}},
         tooltip:{...tipStyle(false),filter:item=>item.raw!=null,
           callbacks:{
             title:items=>items.length?fmtDate(items[0].label):"",
