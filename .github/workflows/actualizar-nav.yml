@@ -2,8 +2,7 @@ name: Actualizar NAV
 
 on:
   schedule:
-    - cron: "17 6 * * *"
-    - cron: "43 17 * * *"
+    - cron: "17 * * * *"
   workflow_dispatch:
 
 permissions:
