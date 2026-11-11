@@ -121,6 +121,22 @@ def recent_points(series, days=365):
     return sum(1 for d in series if d >= limit)
 
 
+def latest_age_days(series):
+    """Antigüedad del último NAV; None si la serie no contiene fechas válidas."""
+    if not series:
+        return None
+    try:
+        return (date.today() - date.fromisoformat(max(series))).days
+    except (TypeError, ValueError):
+        return None
+
+
+def is_fresh_nav(series):
+    """No aceptar una descarga cuyo último NAV ya está fuera del umbral de frescura."""
+    age = latest_age_days(series)
+    return age is not None and 0 <= age <= STALE_DAYS
+
+
 def is_good(series, ccy):
     """Diario (≥150 datos en el último año), reciente y en la divisa buscada."""
     if not series:
@@ -714,14 +730,28 @@ def main():
 
         if session is not None:
             try:
-                new, src = fetch_mstar(isin, session), "morningstar"
+                candidate = fetch_mstar(isin, session)
+                if len(candidate) < MIN_POINTS:
+                    notes.append(f"Morningstar: histórico insuficiente ({len(candidate)} datos)")
+                elif not is_fresh_nav(candidate):
+                    age = latest_age_days(candidate)
+                    notes.append(f"Morningstar: último NAV antiguo ({max(candidate)}; {age} días); se prueba Yahoo")
+                else:
+                    new, src = candidate, "morningstar"
             except Exception as e:
                 notes.append(f"Morningstar: {short(e)}")
-        if not new or len(new) < MIN_POINTS:
+
+        # Yahoo se prueba también cuando Morningstar devuelve una serie antigua.
+        # Nunca se sustituye el histórico existente por una descarga que siga obsoleta.
+        if not new:
             try:
-                sym, new, ynotes = fetch_yahoo_best(isin, (f.get("ticker") or "").strip(), tickers)
-                src = f"yahoo:{sym}"
+                sym, candidate, ynotes = fetch_yahoo_best(isin, (f.get("ticker") or "").strip(), tickers)
                 notes += ynotes
+                if is_fresh_nav(candidate):
+                    new, src = candidate, f"yahoo:{sym}"
+                else:
+                    age = latest_age_days(candidate)
+                    notes.append(f"Yahoo {sym}: último NAV antiguo ({max(candidate)}; {age} días); se conservan los datos existentes")
             except Exception as e:
                 notes.append(short(e, 200))
                 new, src = None, None
