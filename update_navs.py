@@ -196,20 +196,20 @@ def fetch_yahoo_best(isin, hint, cache):
 
 # ------------------------------------------------------------- Morningstar
 def _import_mstarpy():
-    """Carga mstarpy y fuerza la versión 11.1.1 o superior.
+    """Carga mstarpy 11.1.2 desde un commit fijado del repositorio oficial.
 
-    Morningstar cambió el HTML usado para obtener el token MaaS; 11.1.1 es
-    la versión publicada el 3-11-2026. Evita reutilizar una versión anterior
-    que puede seguir instalada en el runner.
+    La versión 11.1.1 falla al buscar maasToken en el HTML. El código oficial
+    más reciente usa una sesión basada en cookies y ya no depende de ese token.
     """
     try:
         installed = importlib.metadata.version("mstarpy")
         nums = tuple(int(x) for x in re.findall(r"\d+", installed)[:3])
     except importlib.metadata.PackageNotFoundError:
         nums = (0,)
-    if nums < (11, 1, 1):
+    if nums < (11, 1, 2):
         subprocess.run(
-            [sys.executable, "-m", "pip", "install", "--quiet", "--upgrade", "mstarpy==11.1.1"],
+            [sys.executable, "-m", "pip", "install", "--quiet", "--upgrade",
+             "git+https://github.com/Mael-J/mstarpy.git@af8b8e4e04c70a389662f8b25c15d4b3626ffcd8"],
             check=True, timeout=300,
         )
     import mstarpy
