@@ -70,6 +70,18 @@ h3{font:600 14px/1.3 var(--sans);margin:0}
 .pulse.warn{background:var(--warn)}
 @keyframes ping{0%{transform:scale(1);opacity:.7}80%,100%{transform:scale(3.2);opacity:0}}
 
+/* Navegación entre resumen y evolución individual de los fondos */
+.view-tabs{display:flex;gap:6px;align-items:center;margin:0 2px 16px;padding:4px;background:var(--chip);border:1px solid var(--line);border-radius:14px;width:max-content;max-width:100%}
+.view-tabs button{border-radius:10px;padding:9px 16px;min-height:38px;color:var(--muted);background:transparent}
+.view-tabs button[aria-selected="true"]{background:var(--panel-solid);color:var(--ink);box-shadow:0 1px 5px rgba(0,0,0,.18)}
+.portfolio-chart-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px}
+.portfolio-chart-head p{margin:6px 0 0;color:var(--muted);font-size:13px;max-width:680px}
+.portfolio-chartbox{height:460px;position:relative;width:100%;min-width:0}
+.portfolio-chart-legend{display:flex;flex-wrap:wrap;gap:9px 15px;margin:14px 0 4px}
+.portfolio-chart-legend span{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)}
+.portfolio-chart-legend i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.portfolio-chart-note{font-size:12px;color:var(--muted);margin:12px 0 0}
+@media(max-width:760px){.portfolio-chartbox{height:340px}.view-tabs{width:100%}.view-tabs button{flex:1;padding:8px 10px}}
 /* Paneles */
 .panel{background:linear-gradient(145deg,rgba(17,31,40,.88),rgba(10,20,27,.84));-webkit-backdrop-filter:blur(18px) saturate(1.12);backdrop-filter:blur(18px) saturate(1.12);border:1px solid rgba(173,211,218,.105);border-radius:18px;padding:22px;margin-bottom:18px;box-shadow:0 1px 0 rgba(255,255,255,.035) inset,0 18px 42px -28px rgba(0,0,0,.95);animation:rise .7s var(--ease) both;position:relative;overflow:hidden}
 .panel::before{content:"";position:absolute;inset:0 0 auto;height:1px;background:linear-gradient(90deg,transparent,rgba(92,218,198,.22),transparent);pointer-events:none}
@@ -476,6 +488,11 @@ main{display:block;width:100%;max-width:1480px;min-width:0;margin:0 auto;padding
       <button class="iconbtn" id="btnSet" title="Ajustes" aria-label="Ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
     </div>
   </header>
+  <div class="view-tabs" role="tablist" aria-label="Vistas de la cartera">
+    <button type="button" id="tabResumen" role="tab" aria-selected="true">Resumen</button>
+    <button type="button" id="tabMiCartera" role="tab" aria-selected="false">Mi cartera · Gráfica</button>
+  </div>
+  <section class="panel" id="portfolioView" hidden></section>
   <section class="panel" id="panel"><div class="skel"><i style="height:22px;width:34%"></i><i style="height:54px;width:46%"></i><i style="height:300px"></i><i style="height:64px"></i></div></section>
   <section class="panel" id="insights" hidden></section>
   <section class="panel" id="editor" hidden></section>
@@ -1104,7 +1121,7 @@ const ICON = {
 };
 
 const state = {
-  tf: "1A", range: null, customOpen: false, view: "cartera", showOps: true, showEvents: true, compareId: "none",
+  tf: "1A", range: null, customOpen: false, view: "cartera", activeTab: "resumen", portfolioTf: "MAX", showOps: true, showEvents: true, compareId: "none",
   focus: "rend", aTf: "MAX", aView: "grafico", editing: false, weightsDirty: false, theme: "dark",
   sortKey: "w", sortDir: -1,
   fundsRaw: null, series: {}, remoteWeights: {}, weights: {}, remoteOps: [], ops: [], events: DEFAULT_EVENTS,
@@ -2287,7 +2304,96 @@ function renderInsights(){
   collapsible(el, "insights", "<h2>Qué está pasando</h2>", `<ul class="insights">${items.map(([ic, html]) => `<li><span class="ico" aria-hidden="true">${ic}</span><span>${html}</span></li>`).join("")}</ul>`, false);
 }
 
-function renderAll(o = {}){ renderMain(o); renderAlert(); renderInsights(); renderEditor(); renderOps(o); renderAnalysis(o); renderSim(); renderFresh(); }
+function showAppTab(tab){
+  state.activeTab = tab === "mi-cartera" ? "mi-cartera" : "resumen";
+  const chartOn = state.activeTab === "mi-cartera";
+  $("#tabResumen").setAttribute("aria-selected", String(!chartOn));
+  $("#tabMiCartera").setAttribute("aria-selected", String(chartOn));
+  for (const id of ["panel","insights","editor","ops","analysis","sim","missing"]) {
+    const el = document.getElementById(id); if (el) el.hidden = chartOn;
+  }
+  const alert = document.getElementById("alertBar"); if (alert) alert.hidden = chartOn;
+  $("#portfolioView").hidden = !chartOn;
+  if (chartOn) renderPortfolioChart();
+}
+function renderPortfolioChart(){
+  const host = $("#portfolioView");
+  destroyCharts("portfolio");
+  if (!state.fundsRaw || !state.ops || !state.series){ host.innerHTML = '<div class="empty">No hay datos de cartera disponibles.</div>'; return; }
+  const allDates = Object.values(state.series).flatMap(a => (a || []).map(p => p[0])).sort();
+  const lastDate = allDates[allDates.length - 1];
+  if (!lastDate){ host.innerHTML = '<div class="empty">Todavía no hay histórico de NAV.</div>'; return; }
+  const tf = state.portfolioTf || "MAX";
+  const cut = tf === "MAX" ? "0000-01-01" : tf === "YTD" ? lastDate.slice(0,4)+"-01-01" : shiftMonths(lastDate, -({"1A":12,"6M":6,"3M":3,"1M":1}[tf] || 12));
+  const colors = PALETTE;
+  const funds = (state.fundsRaw.funds || []).map((f, i) => {
+    const ops = state.ops.filter(o => o.isin === f.isin && Number(o.importe) > 0).sort((a,b) => a.fecha.localeCompare(b.fecha));
+    const raw = (state.series[f.isin] || []).slice().sort((a,b) => a[0].localeCompare(b[0]));
+    if (!ops.length || !raw.length) return null;
+    const firstBuy = ops[0].fecha;
+    const visibleFrom = firstBuy > cut ? firstBuy : cut;
+    const basePoint = raw.find(p => p[0] >= visibleFrom);
+    if (!basePoint) return null;
+    const visible = raw.filter(p => p[0] >= basePoint[0] && p[0] <= lastDate);
+    const buys = {};
+    for (const op of ops) {
+      if (op.fecha < cut || op.fecha > lastDate) continue;
+      const applied = raw.find(p => p[0] >= op.fecha);
+      if (!applied || applied[0] < basePoint[0]) continue;
+      (buys[applied[0]] ||= []).push(op);
+    }
+    return { fund:f, index:i, firstBuy, base:basePoint[1], visible, buys };
+  }).filter(Boolean);
+  const labels = [...new Set(funds.flatMap(f => f.visible.map(p => p[0])))].sort();
+  if (!labels.length){ host.innerHTML = '<div class="empty">No hay NAV dentro del periodo elegido.</div>'; return; }
+  const datasets = funds.map(f => {
+    const values = new Map(f.visible.map(p => [p[0], (p[1] / f.base - 1) * 100]));
+    const markers = labels.map(d => (f.buys[d] || []).length ? 5 : 0);
+    return {
+      label:f.fund.name, data:labels.map(d => values.has(d) ? values.get(d) : null),
+      borderColor:colors[f.index % colors.length], backgroundColor:colors[f.index % colors.length],
+      borderWidth:2, tension:.18, spanGaps:true, fill:false,
+      pointRadius:markers, pointHoverRadius:markers.map(v => v ? 7 : 0),
+      pointBorderWidth:markers.map(v => v ? 2 : 0), pointBackgroundColor:colors[f.index % colors.length],
+      pointBorderColor:css("--panel-solid"), _purchases:f.buys
+    };
+  });
+  const fmtDate = d => new Date(d+"T00:00:00").toLocaleDateString("es-ES",{day:"2-digit",month:"short",year:"numeric"});
+  host.innerHTML = `<div class="portfolio-chart-head">
+    <div><div class="eyebrow">Evolución individual</div><h2>Mi cartera</h2>
+    <p>Rentabilidad de cada fondo desde tu primera compra (o desde el inicio del periodo seleccionado). Cada punto marca una compra tuya.</p></div>
+    <div class="seg scroll" id="portfolioTf" data-seg="portfolioTf" role="group" aria-label="Temporalidad">
+      ${[["MAX","Todo"],["YTD","Año"],["1A","1 año"],["6M","6 meses"],["3M","3 meses"],["1M","1 mes"]].map(([k,l])=>`<button type="button" data-ptf="${k}" aria-pressed="${tf===k}">${l}</button>`).join("")}
+    </div>
+  </div>
+  <div class="chartbox portfolio-chartbox"><canvas id="portfolioLineChart" aria-label="Rentabilidad de cada fondo desde las compras" role="img"></canvas></div>
+  <div class="portfolio-chart-legend">${funds.map(f=>`<span><i style="background:${colors[f.index % colors.length]}"></i>${esc(f.fund.name)}</span>`).join("")}</div>
+  <p class="portfolio-chart-note">La línea muestra la variación porcentual del NAV, no el valor en euros de tus posiciones. En «Todo», cada fondo parte de su primera compra registrada. En periodos más cortos, la línea se reescala al inicio de ese periodo. Los puntos se colocan en el primer NAV disponible en la fecha de cada compra o después.</p>`;
+  host.querySelectorAll("[data-ptf]").forEach(b => b.onclick = () => { state.portfolioTf=b.dataset.ptf; renderPortfolioChart(); });
+  seg($("#portfolioTf"));
+  const muted=css("--muted"), grid=css("--line");
+  const cfg={
+    type:"line",data:{labels,datasets},
+    options:{
+      responsive:true,maintainAspectRatio:false,animation:false,interaction:{mode:"index",intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{...tipStyle(false),filter:item=>item.raw!=null,
+          callbacks:{
+            title:items=>items.length?fmtDate(items[0].label):"",
+            label:c=>`${c.dataset.label}: ${c.parsed.y>=0?"+":""}${nf(c.parsed.y,2)} %`,
+            afterBody:items=>{const c=items[0];if(!c)return[];const buys=c.dataset._purchases?.[c.label]||[];return buys.map(o=>`Compra: ${eur(o.importe)} · ${fmtDate(o.fecha)}`);}
+          }}
+      },
+      scales:{
+        x:{ticks:{color:muted,maxTicksLimit:10,maxRotation:0,callback:(v,i)=>{const d=labels[v];return d?new Date(d+"T00:00:00").toLocaleDateString("es-ES",{month:"short",year:"2-digit"}):"";}},grid:{display:false},border:{display:false}},
+        y:{ticks:{color:muted,callback:v=>`${v>0?"+":""}${nf(v,0)} %`},grid:{color:grid},border:{display:false},title:{display:true,text:"Rentabilidad desde el inicio (%)",color:muted}}
+      }
+    }
+  };
+  mkChart("portfolio-line",$("#portfolioLineChart"),cfg,{reveal:false});
+}
+function renderAll(o = {}){ renderMain(o); renderAlert(); renderInsights(); renderEditor(); renderOps(o); renderAnalysis(o); renderSim(); renderFresh(); if (state.activeTab === "mi-cartera") renderPortfolioChart(); }
 // Fondo matriz de mercado: pequeñas rayas verdes y rojas que aparecen y desaparecen.
 (function ambientMarketMatrix(){
   const canvas=document.getElementById("ambient-bg"); if(!canvas) return;
@@ -2347,6 +2453,8 @@ async function boot(){
     state.settings = loadSettings();
     Chart.defaults.font.family = '"Instrument Sans", system-ui, sans-serif';
     $("#btnSet").onclick = openSettings;
+    $("#tabResumen").onclick = () => showAppTab("resumen");
+    $("#tabMiCartera").onclick = () => showAppTab("mi-cartera");
     const th = LS.get(K_THEME); state.theme = th === "light" || th === "dark" ? th : "dark";
     applyTheme(state.theme, false);
     state.compareId = LS.get(K_CMP) || "none";
